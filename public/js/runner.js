@@ -618,25 +618,32 @@ Runner.prototype = {
     var frame = 0;
     var savedX = cat.xPos;
     var savedY = cat.yPos;
+    var text = 'Press space to play';
+    var textSize = 14;
+    var textGap = 8;
+    var blockH = cat.config.HEIGHT + textGap + textSize;
     var cx = Math.round((this.dimensions.WIDTH - cat.config.WIDTH) / 2);
-    var cy = Math.round(this.dimensions.HEIGHT * 0.12);
+    var cy = Math.round((this.dimensions.HEIGHT - blockH) / 2);
     cat.xPos = cx;
     cat.yPos = cy;
     cat.draw(frame, 0);
 
     this.canvasCtx.fillStyle = '#535353';
-    this.canvasCtx.fillRect(cx + 4, cy + cat.config.HEIGHT - 2,
+    this.canvasCtx.fillRect(cx + 4, cy + cat.config.HEIGHT,
         cat.config.WIDTH - 8, 1);
 
     cat.xPos = savedX;
     cat.yPos = savedY;
 
     this.canvasCtx.fillStyle = '#202124';
-    this.canvasCtx.font = '600 16px Arial, sans-serif';
+    this.canvasCtx.font = '600 14px Inter, sans-serif';
     this.canvasCtx.textAlign = 'center';
     this.canvasCtx.textBaseline = 'top';
-    this.canvasCtx.fillText('Press space to play',
-        this.dimensions.WIDTH / 2, cy + cat.config.HEIGHT + 8);
+    if (this.canvasCtx.letterSpacing !== undefined) {
+      this.canvasCtx.letterSpacing = '-1.25px';
+    }
+    this.canvasCtx.fillText(text,
+        this.dimensions.WIDTH / 2, cy + cat.config.HEIGHT + textGap);
   },
 
   /**
