@@ -1,0 +1,16 @@
+{
+  "WIDTH": 60,
+  "HEIGHT": 54,
+  "WIDTH_DUCK": 60,
+  "HEIGHT_DUCK": 54,
+  "OFFSETS": {
+    "standing": 0,
+    "blink": 60,
+    "runA": 120,
+    "runB": 180,
+    "crashed": 300,
+    "duckA": 360,
+    "duckB": 420
+  },
+  "SHEET_W": 480
+}

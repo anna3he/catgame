@@ -1,0 +1,11 @@
+{
+  "name": "cat-runner",
+  "private": true,
+  "scripts": {
+    "start": "python3 -m http.server 3456",
+    "build": "node tools/import-user-sprites.js"
+  },
+  "devDependencies": {
+    "pngjs": "^7.0.0"
+  }
+}

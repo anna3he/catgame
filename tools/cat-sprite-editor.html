@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cat Sprite Editor</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 24px; background: #f7f7f7; }
+    .row { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+    canvas { image-rendering: pixelated; border: 1px solid #ccc; background: #fff; }
+    textarea { font-family: monospace; width: 320px; height: 520px; }
+    button { margin-right: 8px; margin-top: 8px; padding: 8px 12px; }
+    label { display: block; margin-bottom: 8px; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h1>Cat Sprite Editor</h1>
+  <p>44×47 pixel grid. <code>#</code> body, <code>E</code> eye, <code>-</code> closed eye, <code>.</code> empty.</p>
+  <label>Frame
+    <select id="frame">
+      <option value="standing">Standing / Jump (x=0)</option>
+      <option value="blink">Blink (x=44)</option>
+      <option value="runA">Run A (x=88)</option>
+      <option value="runB">Run B (x=132)</option>
+      <option value="crashed">Crashed (x=220)</option>
+    </select>
+  </label>
+  <div class="row">
+    <div>
+      <canvas id="preview" width="440" height="470"></canvas>
+      <div>
+        <button id="apply">Apply grid to preview</button>
+        <button id="download">Download full sheet PNG</button>
+      </div>
+    </div>
+    <div>
+      <label for="grid">Pixel grid</label>
+      <textarea id="grid"></textarea>
+    </div>
+  </div>
+  <script>
+    const W = 44, H = 47, SCALE = 10;
+    const FRAMES = {};
+    const preview = document.getElementById('preview');
+    const ctx = preview.getContext('2d');
+    const gridEl = document.getElementById('grid');
+    const frameEl = document.getElementById('frame');
+
+    function blank() {
+      return Array.from({ length: H }, () => '.'.repeat(W).split(''));
+    }
+
+    function parseGrid(text) {
+      const rows = text.trim().split('\n').map(r => r.trimEnd());
+      while (rows.length < H) rows.push('.'.repeat(W));
+      return rows.slice(0, H).map(r => (r + '.'.repeat(W)).slice(0, W).split(''));
+    }
+
+    function drawGrid(cells) {
+      ctx.clearRect(0, 0, preview.width, preview.height);
+      for (let y = 0; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+          const c = cells[y][x];
+          if (c === '#') ctx.fillStyle = '#535353';
+          else if (c === 'E') ctx.fillStyle = '#f7f7f7';
+          else if (c === '-') ctx.fillStyle = '#535353';
+          else continue;
+          ctx.fillRect(x * SCALE, y * SCALE, SCALE, SCALE);
+        }
+      }
+    }
+
+    function cellsToText(cells) {
+      return cells.map(r => r.join('')).join('\n');
+    }
+
+    function loadFrame(name) {
+      if (!FRAMES[name]) FRAMES[name] = blank();
+      gridEl.value = cellsToText(FRAMES[name]);
+      drawGrid(FRAMES[name]);
+    }
+
+    frameEl.addEventListener('change', () => {
+      FRAMES[frameEl.dataset.current] = parseGrid(gridEl.value);
+      frameEl.dataset.current = frameEl.value;
+      loadFrame(frameEl.value);
+    });
+
+    document.getElementById('apply').onclick = () => {
+      const cells = parseGrid(gridEl.value);
+      FRAMES[frameEl.value] = cells;
+      drawGrid(cells);
+    };
+
+    document.getElementById('download').onclick = () => {
+      FRAMES[frameEl.value] = parseGrid(gridEl.value);
+      alert('Use tools/compose-sprite-sheet.js to regenerate production PNGs from code. This editor is for visual iteration.');
+    };
+
+    frameEl.dataset.current = 'standing';
+    loadFrame('standing');
+  </script>
+</body>
+</html>
