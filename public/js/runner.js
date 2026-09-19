@@ -143,6 +143,7 @@ Runner.defaultDimensions = {
 Runner.classes = {
   CANVAS: 'runner-canvas',
   CONTAINER: 'runner-container',
+  START_TEXT: 'runner-start-text',
   CRASHED: 'crashed',
   ICON: 'icon-offline',
   INVERTED: 'inverted',
@@ -381,6 +382,11 @@ Runner.prototype = {
     // Draw cat
     this.cat = new Cat(this.canvas, this.spriteDef.CAT);
 
+    this.startTextEl = document.createElement('div');
+    this.startTextEl.className = Runner.classes.START_TEXT;
+    this.startTextEl.textContent = 'Press space to play';
+    this.containerEl.appendChild(this.startTextEl);
+
     this.outerContainerEl.appendChild(this.containerEl);
     this.containerEl.style.width = this.dimensions.WIDTH + 'px';
     this.containerEl.style.height = this.dimensions.HEIGHT + 'px';
@@ -610,7 +616,7 @@ Runner.prototype = {
   },
 
   /**
-   * Idle start screen: centered cat + "Press space to play".
+   * Idle start screen: cat bottom-left, label below box.
    */
   drawStartScreen: function() {
     this.clearCanvas();
@@ -618,25 +624,14 @@ Runner.prototype = {
     var frame = 0;
     var savedX = cat.xPos;
     var savedY = cat.yPos;
-    var cx = Math.round((this.dimensions.WIDTH - cat.config.WIDTH) / 2);
-    var cy = Math.round(this.dimensions.HEIGHT * 0.12);
-    cat.xPos = cx;
-    cat.yPos = cy;
+    cat.xPos = 12;
+    cat.yPos = cat.groundYPos;
     cat.draw(frame, 0);
-
-    this.canvasCtx.fillStyle = '#535353';
-    this.canvasCtx.fillRect(cx + 4, cy + cat.config.HEIGHT - 2,
-        cat.config.WIDTH - 8, 1);
 
     cat.xPos = savedX;
     cat.yPos = savedY;
 
-    this.canvasCtx.fillStyle = '#202124';
-    this.canvasCtx.font = '600 16px Arial, sans-serif';
-    this.canvasCtx.textAlign = 'center';
-    this.canvasCtx.textBaseline = 'top';
-    this.canvasCtx.fillText('Press space to play',
-        this.dimensions.WIDTH / 2, cy + cat.config.HEIGHT + 8);
+    this.startTextEl.style.display = 'block';
   },
 
   /**
@@ -712,6 +707,7 @@ Runner.prototype = {
         if (!this.activated) {
           this.loadSounds();
           this.activated = true;
+          this.startTextEl.style.display = 'none';
           this.cat.xPos = 0;
           this.cat.yPos = this.cat.groundYPos;
           this.cat.update(0, Cat.status.RUNNING);
