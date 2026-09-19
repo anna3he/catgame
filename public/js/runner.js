@@ -142,6 +142,7 @@ Runner.defaultDimensions = {
  */
 Runner.classes = {
   CANVAS: 'runner-canvas',
+  WRAPPER: 'runner-wrapper',
   CONTAINER: 'runner-container',
   START_TEXT: 'runner-start-text',
   CRASHED: 'crashed',
@@ -359,6 +360,9 @@ Runner.prototype = {
     this.adjustDimensions();
     this.setSpeed();
 
+    this.wrapperEl = document.createElement('div');
+    this.wrapperEl.className = Runner.classes.WRAPPER;
+
     this.containerEl = document.createElement('div');
     this.containerEl.className = Runner.classes.CONTAINER;
 
@@ -385,9 +389,10 @@ Runner.prototype = {
     this.startTextEl = document.createElement('div');
     this.startTextEl.className = Runner.classes.START_TEXT;
     this.startTextEl.textContent = 'Press space to play';
-    this.containerEl.appendChild(this.startTextEl);
+    this.wrapperEl.appendChild(this.containerEl);
+    this.wrapperEl.appendChild(this.startTextEl);
 
-    this.outerContainerEl.appendChild(this.containerEl);
+    this.outerContainerEl.appendChild(this.wrapperEl);
     this.containerEl.style.width = this.dimensions.WIDTH + 'px';
     this.containerEl.style.height = this.dimensions.HEIGHT + 'px';
     this.drawStartScreen();
@@ -478,21 +483,32 @@ Runner.prototype = {
             'from { width:' + Cat.config.WIDTH + 'px }' +
             'to { width: ' + this.dimensions.WIDTH + 'px }' +
           '}';
-      document.styleSheets[0].insertRule(keyframes, 0);
+      try {
+        document.styleSheets[0].insertRule(keyframes, 0);
+      } catch (e) {}
 
-      this.containerEl.addEventListener('animationend', this.startGame.bind(this));
+      if (!this.onIntroComplete) {
+        this.onIntroComplete = this.startGame.bind(this);
+      }
+      this.containerEl.addEventListener('animationend', this.onIntroComplete);
       this.containerEl.addEventListener(Runner.events.ANIM_END,
-          this.startGame.bind(this));
+          this.onIntroComplete);
 
+      this.containerEl.style.animation = '';
+      this.containerEl.style.webkitAnimation = '';
+      this.containerEl.style.width = Cat.config.WIDTH + 'px';
+      this.containerEl.offsetWidth;
       this.containerEl.style.animation = 'intro .4s ease-out 1 both';
       this.containerEl.style.webkitAnimation = 'intro .4s ease-out 1 both';
-      this.containerEl.style.width = this.dimensions.WIDTH + 'px';
 
       if (this.touchController) {
         this.outerContainerEl.appendChild(this.touchController);
       }
       this.activated = true;
       this.started = true;
+
+      clearTimeout(this.introFallbackTimer);
+      this.introFallbackTimer = setTimeout(this.onIntroComplete, 500);
     } else if (this.crashed) {
       this.restart();
     }
@@ -503,6 +519,11 @@ Runner.prototype = {
    * Update the game status to started.
    */
   startGame: function() {
+    if (!this.playingIntro) {
+      return;
+    }
+
+    clearTimeout(this.introFallbackTimer);
     this.runningTime = 0;
     this.playingIntro = false;
     this.cat.playingIntro = false;
