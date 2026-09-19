@@ -470,45 +470,19 @@ Runner.prototype = {
   },
 
   /**
-   * Play the game intro.
-   * Canvas container width expands out to the full width.
+   * Start the game. Skip the width-expand intro — home screen is already
+   * full width.
    */
   playIntro: function() {
     if (!this.started && !this.crashed) {
       this.playingIntro = true;
-      this.cat.playingIntro = true;
-
-      // CSS animation definition.
-      var keyframes = '@-webkit-keyframes intro { ' +
-            'from { width:' + Cat.config.WIDTH + 'px }' +
-            'to { width: ' + this.dimensions.WIDTH + 'px }' +
-          '}';
-      try {
-        document.styleSheets[0].insertRule(keyframes, 0);
-      } catch (e) {}
-
-      if (!this.onIntroComplete) {
-        this.onIntroComplete = this.startGame.bind(this);
-      }
-      this.containerEl.addEventListener('animationend', this.onIntroComplete);
-      this.containerEl.addEventListener(Runner.events.ANIM_END,
-          this.onIntroComplete);
-
-      this.containerEl.style.animation = '';
-      this.containerEl.style.webkitAnimation = '';
-      this.containerEl.style.width = Cat.config.WIDTH + 'px';
-      this.containerEl.offsetWidth;
-      this.containerEl.style.animation = 'intro .4s ease-out 1 both';
-      this.containerEl.style.webkitAnimation = 'intro .4s ease-out 1 both';
 
       if (this.touchController) {
         this.outerContainerEl.appendChild(this.touchController);
       }
       this.activated = true;
       this.started = true;
-
-      clearTimeout(this.introFallbackTimer);
-      this.introFallbackTimer = setTimeout(this.onIntroComplete, 500);
+      this.startGame();
     } else if (this.crashed) {
       this.restart();
     }
@@ -523,12 +497,9 @@ Runner.prototype = {
       return;
     }
 
-    clearTimeout(this.introFallbackTimer);
     this.runningTime = 0;
     this.playingIntro = false;
     this.cat.playingIntro = false;
-    this.containerEl.style.animation = '';
-      this.containerEl.style.webkitAnimation = '';
     this.playCount++;
 
     // Handle tabbing off the page. Pause the current game.
